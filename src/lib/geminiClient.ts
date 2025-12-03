@@ -35,7 +35,7 @@ export const getCatJudgeVerdict = async (data: JudgeInput) => {
 
   try {
     // 使用 flash 模型，速度快且足够处理文本
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `
     你现在是温柔但严格的“猫猫法官”，要帮一对情侣解决矛盾。
