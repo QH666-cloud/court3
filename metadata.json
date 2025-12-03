@@ -1,0 +1,5 @@
+{
+  "name": "Cat Court",
+  "description": "A conflict resolution web app for couples powered by Gemini and Supabase Realtime.",
+  "requestFramePermissions": []
+}
