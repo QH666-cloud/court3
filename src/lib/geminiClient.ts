@@ -26,7 +26,7 @@ export const getCatJudgeVerdict = async (data: JudgeInput) => {
   const genAI = new GoogleGenerativeAI(API_KEY);
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
 
     const prompt = `
     你现在是温柔但严格的“猫猫法官”，要帮一对情侣解决矛盾。
