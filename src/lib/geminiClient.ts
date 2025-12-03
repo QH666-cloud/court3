@@ -1,14 +1,20 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+// ⚠️ 严格使用 Vite 环境变量标准
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-// Log key status on load (masked for security)
+// 初始化时立即检查 Key 状态
+console.log('------------------------------------------------');
+console.log('🔍 [GeminiClient] Initializing...');
 if (!API_KEY) {
-  console.error('❌ Critical: VITE_GEMINI_API_KEY is not defined in import.meta.env');
+  console.error('❌ [GeminiClient] Critical Error: VITE_GEMINI_API_KEY is undefined/empty!');
+  console.error('👉 Tip: Ensure you have set "VITE_GEMINI_API_KEY" in your Vercel Project Settings (Environment Variables).');
 } else {
-  console.log(`✅ Gemini API Key detected (Length: ${API_KEY.length})`);
+  // 安全地打印前几个字符用于确认
+  console.log(`✅ [GeminiClient] API Key loaded. Starts with: ${API_KEY.substring(0, 4)}... (Length: ${API_KEY.length})`);
 }
+console.log('------------------------------------------------');
 
 interface JudgeInput {
   male_story: string;
@@ -18,15 +24,18 @@ interface JudgeInput {
 }
 
 export const getCatJudgeVerdict = async (data: JudgeInput) => {
+  // 运行时再次检查
   if (!API_KEY) {
-    console.error('Attempted to call Gemini API without a valid key.');
+    console.error('❌ [GeminiClient] Aborting request: Missing API Key.');
     throw new Error('GEMINI_KEY_MISSING');
   }
 
+  // 使用最新官方 SDK 初始化
   const genAI = new GoogleGenerativeAI(API_KEY);
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+    // 使用 flash 模型，速度快且足够处理文本
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const prompt = `
     你现在是温柔但严格的“猫猫法官”，要帮一对情侣解决矛盾。
@@ -52,15 +61,24 @@ export const getCatJudgeVerdict = async (data: JudgeInput) => {
     语气风格：既要有法官的威严，又要带点猫咪的傲娇和治愈感。
     `;
 
-    console.log('📡 Sending request to Gemini...');
+    console.log('📡 [GeminiClient] Sending request to Gemini API...');
+    
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
-    console.log('✅ Gemini response received.');
+    
+    console.log('✅ [GeminiClient] Response received successfully.');
     return text;
-  } catch (error) {
-    console.error('❌ Gemini API Request Failed:', error);
-    // Throw the raw error so the component can inspect it
+
+  } catch (error: any) {
+    // 打印完整的错误对象到控制台，方便在 Vercel/浏览器 调试
+    console.error('❌ [GeminiClient] API Request Failed. Full Error Object:', error);
+    
+    if (error.response) {
+       console.error('❌ [GeminiClient] Error Response Details:', error.response);
+    }
+    
+    // 将错误向外抛出，交给 UI 层处理
     throw error;
   }
 };

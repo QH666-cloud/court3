@@ -24,24 +24,26 @@ export const RoomPage: React.FC<RoomPageProps> = ({ roomId, nickname, role, onLe
       const result = await getCatJudgeVerdict(roomData);
       setVerdict(result);
     } catch (err: any) {
-      console.error("❌ Error in handleAnalyze:", err);
+      console.error("❌ [RoomPage] Caught Error:", err);
 
       if (err.message === 'GEMINI_KEY_MISSING') {
-        alert('配置错误：VITE_GEMINI_API_KEY 环境变量未配置或构建时不可用！请检查 Vercel 设置。');
+        alert('配置错误：VITE_GEMINI_API_KEY 环境变量未配置或构建时不可用！\n\n请在 Vercel 的 Settings -> Environment Variables 中添加 VITE_GEMINI_API_KEY。');
       } else {
-        // Show a more specific error if possible, otherwise generic
         let msg = '猫猫法官连接失败，请检查网络或 Key 喵！';
-        
-        // Common Gemini API error patterns
-        if (err.message?.includes('401') || err.message?.includes('API key not valid')) {
-          msg = 'API Key 无效 (401)。请检查 Vercel 中的 Key 是否正确。';
-        } else if (err.message?.includes('403')) {
-          msg = 'API Key 权限受限 (403)。请检查 Key 是否有权访问 Gemini API。';
-        } else if (err.message?.includes('503')) {
-          msg = '猫猫法官服务暂时不可用 (503)，请稍后再试。';
+        let detail = err.message || JSON.stringify(err);
+
+        // Analyze error types
+        if (detail.includes('401') || detail.includes('API key not valid')) {
+          msg = '认证失败 (401)：API Key 无效。请检查 Vercel 环境变量是否填错。';
+        } else if (detail.includes('403')) {
+          msg = '权限不足 (403)：该 API Key 可能没有访问 Gemini 模型的权限，或者所在的地区/IP 受限。';
+        } else if (detail.includes('503')) {
+          msg = '服务过载 (503)：猫猫法官现在太忙了，请稍后再试。';
+        } else if (detail.includes('fetch failed')) {
+          msg = '网络错误：无法连接到 Google API。这可能是网络问题。';
         }
 
-        alert(msg + `\n详细错误: ${err.message}`);
+        alert(`${msg}\n\n详细错误: ${detail}`);
       }
     } finally {
       setAnalyzing(false);
