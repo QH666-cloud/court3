@@ -1,8 +1,14 @@
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-const genAI = new GoogleGenerativeAI(API_KEY);
+// Log key status on load (masked for security)
+if (!API_KEY) {
+  console.error('❌ Critical: VITE_GEMINI_API_KEY is not defined in import.meta.env');
+} else {
+  console.log(`✅ Gemini API Key detected (Length: ${API_KEY.length})`);
+}
 
 interface JudgeInput {
   male_story: string;
@@ -12,6 +18,13 @@ interface JudgeInput {
 }
 
 export const getCatJudgeVerdict = async (data: JudgeInput) => {
+  if (!API_KEY) {
+    console.error('Attempted to call Gemini API without a valid key.');
+    throw new Error('GEMINI_KEY_MISSING');
+  }
+
+  const genAI = new GoogleGenerativeAI(API_KEY);
+
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
@@ -39,11 +52,15 @@ export const getCatJudgeVerdict = async (data: JudgeInput) => {
     语气风格：既要有法官的威严，又要带点猫咪的傲娇和治愈感。
     `;
 
+    console.log('📡 Sending request to Gemini...');
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    return response.text();
+    const text = response.text();
+    console.log('✅ Gemini response received.');
+    return text;
   } catch (error) {
-    console.error('Gemini API Error:', error);
-    throw new Error('猫猫法官正在睡觉，请稍后再试...');
+    console.error('❌ Gemini API Request Failed:', error);
+    // Throw the raw error so the component can inspect it
+    throw error;
   }
 };
