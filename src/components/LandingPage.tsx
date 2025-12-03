@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Cat, HeartHandshake, User, Users } from 'lucide-react';
+import { Cat, HeartHandshake, User } from 'lucide-react';
 
 interface LandingPageProps {
   onJoin: (roomId: string, nickname: string, role: 'male' | 'female') => void;
